@@ -32,6 +32,9 @@ public class SensorResource {
     public Sensor create(Sensor s) {
         s.createdAt = java.time.LocalDateTime.now();
         s.updatedAt = java.time.LocalDateTime.now();
+        var client = jakarta.ws.rs.client.ClientBuilder.newClient();
+        var resp = client.target("http://localhost:8080/devices/" + s.deviceId).request().get();
+        if (resp.getStatus() != 200) throw new BadRequestException("device not found");
         repo.persist(s);
         return s;
     }
