@@ -21,7 +21,7 @@ func main() {
 		panic(err)
 	}
 
-	db.AutoMigrate(&models.Device{})
+	db.AutoMigrate(&models.Device{}, &models.DeliveryLog{})
 
 	r := gin.Default()
 	r.GET("/devices", func(c *gin.Context) { controllers.GetDevices(c, db) })
