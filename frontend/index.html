@@ -12,6 +12,32 @@
   <body class="bg-light">
     <div class="container py-5 text-center">
       <h1 class="mb-4">Mertani IoT Management</h1>
+      <div id="stats" class="row justify-content-center my-5">
+        <div class="col-md-3">
+          <div class="card shadow-sm">
+            <div class="card-body text-center">
+              <h5>Total Devices</h5>
+              <h2 id="totalDevices">0</h2>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="card shadow-sm">
+            <div class="card-body text-center">
+              <h5>Total Sensors</h5>
+              <h2 id="totalSensors">0</h2>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="card shadow-sm">
+            <div class="card-body text-center">
+              <h5>Active Devices</h5>
+              <h2 id="activeDevices">0</h2>
+            </div>
+          </div>
+        </div>
+      </div>
       <p class="lead">Kelola Device dan Sensor dengan mudah.</p>
       <div class="mt-5">
         <a href="devices.html" class="btn btn-primary btn-lg me-3"
@@ -20,5 +46,23 @@
         <a href="sensors.html" class="btn btn-success btn-lg">Kelola Sensor</a>
       </div>
     </div>
+    <script>
+      async function loadStats() {
+        const [devRes, senRes] = await Promise.all([
+          fetch("http://localhost:8080/devices"),
+          fetch("http://localhost:8082/sensors"),
+        ]);
+
+        const devices = await devRes.json();
+        const sensors = await senRes.json();
+
+        document.getElementById("totalDevices").innerText = devices.length;
+        document.getElementById("totalSensors").innerText = sensors.length;
+        document.getElementById("activeDevices").innerText = devices.filter(
+          (d) => d.status
+        ).length;
+      }
+      document.addEventListener("DOMContentLoaded", loadStats);
+    </script>
   </body>
 </html>

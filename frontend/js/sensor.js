@@ -1,10 +1,28 @@
 const API_URL = "http://localhost:8082/sensors";
 const tableBody = document.querySelector("#sensorTable tbody");
 const modal = new bootstrap.Modal(document.getElementById("sensorModal"));
+const deviceSelect = document.getElementById("deviceFilter");
+
+async function loadDevicesForFilter() {
+  const res = await fetch("http://localhost:8080/devices");
+  const devices = await res.json();
+  devices.forEach((d) => {
+    const opt = document.createElement("option");
+    opt.value = d.id;
+    opt.textContent = `${d.id} - ${d.name}`;
+    deviceSelect.appendChild(opt);
+  });
+}
 
 async function fetchSensors() {
+  const deviceId = deviceSelect.value;
   const res = await fetch(API_URL);
-  const data = await res.json();
+  let data = await res.json();
+
+  if (deviceId) {
+    data = data.filter((s) => s.deviceId == deviceId);
+  }
+
   tableBody.innerHTML = "";
   data.forEach((s) => {
     const row = `<tr>
@@ -62,3 +80,8 @@ async function deleteSensor(id) {
 
 document.getElementById("saveSensorBtn").addEventListener("click", saveSensor);
 document.addEventListener("DOMContentLoaded", fetchSensors);
+deviceSelect.addEventListener("change", fetchSensors);
+document.addEventListener("DOMContentLoaded", async () => {
+  await loadDevicesForFilter();
+  fetchSensors();
+});

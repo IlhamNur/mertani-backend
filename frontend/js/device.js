@@ -2,6 +2,15 @@ const API_URL = "http://localhost:8080/devices";
 const tableBody = document.querySelector("#deviceTable tbody");
 const modal = new bootstrap.Modal(document.getElementById("deviceModal"));
 
+function showAlert(message, type = "success") {
+  const alertBox = document.createElement("div");
+  alertBox.className = `alert alert-${type} position-fixed top-0 end-0 m-3 shadow`;
+  alertBox.style.zIndex = "1055";
+  alertBox.innerText = message;
+  document.body.appendChild(alertBox);
+  setTimeout(() => alertBox.remove(), 3000);
+}
+
 async function fetchDevices() {
   const res = await fetch(API_URL);
   const data = await res.json();
@@ -32,17 +41,23 @@ async function saveDevice() {
     location: document.getElementById("deviceLocation").value,
     status: document.getElementById("deviceStatus").checked,
   };
+
   const method = id ? "PUT" : "POST";
   const url = id ? `${API_URL}/${id}` : API_URL;
 
-  await fetch(url, {
-    method,
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
-  modal.hide();
-  document.querySelector("button[data-bs-target='#deviceModal']").focus();
-  fetchDevices();
+  try {
+    await fetch(url, {
+      method,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    modal.hide();
+    document.querySelector("button[data-bs-target='#deviceModal']").focus();
+    showAlert("Device berhasil disimpan!");
+    fetchDevices();
+  } catch (err) {
+    showAlert("Gagal menyimpan device!", "danger");
+  }
 }
 
 async function editDevice(id) {
@@ -57,8 +72,13 @@ async function editDevice(id) {
 
 async function deleteDevice(id) {
   if (!confirm("Yakin hapus device ini?")) return;
-  await fetch(`${API_URL}/${id}`, { method: "DELETE" });
-  fetchDevices();
+  try {
+    await fetch(`${API_URL}/${id}`, { method: "DELETE" });
+    showAlert("Device berhasil dihapus!");
+    fetchDevices();
+  } catch (err) {
+    showAlert("Gagal menghapus device!", "danger");
+  }
 }
 
 document.getElementById("saveDeviceBtn").addEventListener("click", saveDevice);
