@@ -1,27 +1,41 @@
 package main
 
 import (
+	"fmt"
+	"log"
 	"os"
 	"time"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 
 	"github.com/IlhamNur/mertani-device/controllers"
 	"github.com/IlhamNur/mertani-device/models"
-	"github.com/gin-contrib/cors"
 )
 
 func main() {
-	dsn := os.Getenv("DATABASE_DSN")
-	if dsn == "" {
-		dsn = "host=localhost user=postgres password=admin dbname=mertani port=5432 sslmode=disable"
+	if err := godotenv.Load("../.env"); err != nil {
+		log.Println("Warning: Root .env not found, using system environment variables")
 	}
+
+	dsn := fmt.Sprintf(
+		"host=%s user=%s password=%s dbname=%s port=%s sslmode=%s",
+		os.Getenv("DB_HOST"),
+		os.Getenv("DB_USER"),
+		os.Getenv("DB_PASSWORD"),
+		os.Getenv("DB_NAME"),
+		os.Getenv("DB_PORT"),
+		os.Getenv("DB_SSLMODE"),
+	)
+
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
-		panic(err)
+		log.Fatalf("Database connection failed: %v", err)
 	}
+	log.Println("Connected to PostgreSQL")
 
 	db.AutoMigrate(&models.Device{}, &models.DeliveryLog{})
 
@@ -43,5 +57,10 @@ func main() {
 	r.DELETE("/devices/:id", func(c *gin.Context) { controllers.DeleteDevice(c, db) })
 	r.GET("/delivery-logs", func(c *gin.Context) { controllers.GetDeliveryLogs(c, db) })
 
-	r.Run(":8080")
+	port := os.Getenv("DEVICE_PORT")
+	if port == "" {
+		port = "8080"
+	}
+	log.Printf("Device Service running on port %s", port)
+	r.Run(":" + port)
 }
