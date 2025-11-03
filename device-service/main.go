@@ -41,6 +41,7 @@ func main() {
 	r.POST("/devices", func(c *gin.Context) { controllers.CreateDevice(c, db) })
 	r.PUT("/devices/:id", func(c *gin.Context) { controllers.UpdateDevice(c, db) })
 	r.DELETE("/devices/:id", func(c *gin.Context) { controllers.DeleteDevice(c, db) })
+	r.GET("/delivery-logs", func(c *gin.Context) { controllers.GetDeliveryLogs(c, db) })
 
 	r.Run(":8080")
 }

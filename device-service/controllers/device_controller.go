@@ -62,3 +62,9 @@ func DeleteDevice(c *gin.Context, db *gorm.DB) {
 	}
 	c.JSON(http.StatusOK, gin.H{"message": "deleted"})
 }
+
+func GetDeliveryLogs(c *gin.Context, db *gorm.DB) {
+	var logs []models.DeliveryLog
+	db.Order("created_at DESC").Limit(50).Find(&logs)
+	c.JSON(http.StatusOK, logs)
+}
